@@ -26,6 +26,10 @@ class Direction(Enum):
       Direction.right: Direction.left
     }.get(self)
 
+# Game input type
+GameInput = collections.namedtuple('GameInput',
+  'snakeDir')
+
 # Game state type
 GameState = collections.namedtuple('GameState',
   'snakePos snakeDir snakeLength snakeBlocks foodPos')
@@ -37,8 +41,8 @@ class SnakeGame:
     self.gameState = SnakeGame._newGame()
 
   # Update the game
-  def update(self, snakeDir):
-    self.gameState = self._updateGame(self.gameState, snakeDir)
+  def update(self, gameInput):
+    self.gameState = self._updateGame(self.gameState, gameInput)
     return self.gameState
 
   # Draw the game to a pygame window
@@ -86,8 +90,8 @@ class SnakeGame:
     return touchingSelf or touchingWall
 
   # update game state
-  def _updateGame(self, gameState, snakeDir):
-    gameState = self._updateSnakeDir(gameState, snakeDir)
+  def _updateGame(self, gameState, gameInput):
+    gameState = self._updateSnakeDir(gameState, gameInput)
     gameState = self._updateSnakePos(gameState)
     gameState = self._updateFood(gameState)
 
@@ -97,9 +101,9 @@ class SnakeGame:
       return gameState
 
   # update the snake's direction
-  def _updateSnakeDir(self, gameState, snakeDir):
-    if snakeDir != None and gameState.snakeDir != snakeDir.opposite():
-      return gameState._replace(snakeDir = snakeDir)
+  def _updateSnakeDir(self, gameState, gameInput):
+    if gameInput.snakeDir != None and gameState.snakeDir != gameInput.snakeDir.opposite():
+      return gameState._replace(snakeDir = gameInput.snakeDir)
     else:
       return gameState
 
