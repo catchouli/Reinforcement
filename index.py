@@ -10,6 +10,22 @@ class Direction(Enum):
   left = 3
   right = 4
 
+  def toVector(self):
+    return {
+      Direction.up: (0, -1),
+      Direction.down: (0, 1),
+      Direction.left: (-1, 0),
+      Direction.right: (1, 0)
+    }.get(self)
+
+  def opposite(self):
+    return {
+      Direction.up: Direction.down,
+      Direction.down: Direction.up,
+      Direction.left: Direction.right,
+      Direction.right: Direction.left
+    }.get(self)
+
 # Game state type
 GameState = collections.namedtuple('GameState',
   'snakePos snakeDir snakeLength snakeBlocks foodPos')
@@ -58,22 +74,6 @@ class SnakeGame:
       snakeBlocks = [SnakeGame.defaultSnakePos],
       foodPos = self._randomFoodPos())
 
-  def _dirToVector(self, dir):
-    return {
-      Direction.up: (0, -1),
-      Direction.down: (0, 1),
-      Direction.left: (-1, 0),
-      Direction.right: (1, 0)
-    }.get(dir)
-
-  def _oppositeDir(self, dir):
-    return {
-      Direction.up: Direction.down,
-      Direction.down: Direction.up,
-      Direction.left: Direction.right,
-      Direction.right: Direction.left
-    }.get(dir)
-
   def _randomFoodPos(self):
     return (random.randint(3, 28), random.randint(3, 20))
 
@@ -94,13 +94,13 @@ class SnakeGame:
       return gameState
 
   def _updateSnakeDir(self, gameState, snakeDir):
-    if snakeDir != None and gameState.snakeDir != self._oppositeDir(snakeDir):
+    if snakeDir != None and gameState.snakeDir != snakeDir.opposite():
       return gameState._replace(snakeDir = snakeDir)
     else:
       return gameState
 
   def _updateSnakePos(self, gameState):
-    movement = self._dirToVector(gameState.snakeDir)
+    movement = gameState.snakeDir.toVector()
     oldPos = gameState.snakePos
     newPos = (oldPos[0] + movement[0], oldPos[1] + movement[1])
     snakeLength = gameState.snakeLength
