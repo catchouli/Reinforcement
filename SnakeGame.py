@@ -60,7 +60,7 @@ class Environment:
     wallSprite = pygame.Surface((16, 16))
     wallSprite.fill((255, 255, 255), pygame.Rect((1, 1), (14, 14)))
     snakeSprite = pygame.Surface((16, 16))
-    snakeSprite.fill((0, 0, 255), pygame.Rect((1, 1), (14, 14)))
+    snakeSprite.fill((243, 128, 128), pygame.Rect((1, 1), (14, 14)))
     foodSprite = pygame.Surface((16, 16))
     foodSprite.fill((0, 255, 0), pygame.Rect((1, 1), (14, 14)))
 
