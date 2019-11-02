@@ -26,27 +26,34 @@ class Direction(Enum):
       Direction.right: Direction.left
     }.get(self)
 
-# Game input type
-GameInput = collections.namedtuple('GameInput',
+# Action type
+Action = collections.namedtuple('Action',
   'snakeDir')
 
-# Game state type
-GameState = collections.namedtuple('GameState',
-  'snakePos snakeDir snakeLength snakeBlocks foodPos')
+# State type
+State = collections.namedtuple('State',
+  'snakeAlive snakePos snakeDir snakeLength snakeBlocks foodPos')
 
-# Game logic
-class SnakeGame:
+# Environment
+class Environment:
+  Direction = Direction
+  Action = Action
+
   def __init__(self, levelDefinition):
     self._levelDefinition = levelDefinition
-    self.gameState = SnakeGame._newGame()
+    self.reset()
 
-  # Update the game
-  def update(self, gameInput):
-    self.gameState = self._updateGame(self.gameState, gameInput)
-    return self.gameState
+  # Reset to default state
+  def reset(self):
+    self.state = Environment._newGame()
 
-  # Draw the game to a pygame window
-  def draw(self, screen):
+  # Step the game state
+  def step(self, gameInput):
+    self.state = self._updateGame(self.state, gameInput)
+    return self.state
+
+  # Draw the game to a pygame screen
+  def render(self, screen):
     # Game objects
     wallSprite = pygame.Surface((16, 16))
     wallSprite.fill((255, 255, 255), pygame.Rect((1, 1), (14, 14)))
@@ -62,43 +69,37 @@ class SnakeGame:
           screen.blit(wallSprite, (x * 16, y * 16))
 
     # Draw food
-    screen.blit(foodSprite, (self.gameState.foodPos[0] * 16, self.gameState.foodPos[1] * 16))
+    screen.blit(foodSprite, (self.state.foodPos[0] * 16, self.state.foodPos[1] * 16))
 
     # Draw snake
-    for snakePos in self.gameState.snakeBlocks:
+    for snakePos in self.state.snakeBlocks:
       screen.blit(snakeSprite, (snakePos[0] * 16, snakePos[1] * 16))
   
   # generate a new game state
   def _newGame():
     defaultSnakePos = (16, 12)
-    return GameState(
-        snakePos = defaultSnakePos,
-        snakeDir = Direction.up,
-        snakeLength = 1,
-        snakeBlocks = [defaultSnakePos],
-        foodPos = SnakeGame._randomFoodPos())
+    return State(
+      snakeAlive = True,
+      snakePos = defaultSnakePos,
+      snakeDir = Direction.up,
+      snakeLength = 1,
+      snakeBlocks = [defaultSnakePos],
+      foodPos = Environment._randomFoodPos())
 
   # generate a new random position for the food
   def _randomFoodPos():
     return (random.randint(3, 28), random.randint(3, 20))
 
-  # check if the snake should be dead due to a self or wall collision
-  def _snakeDead(self, gameState):
-    block = self._levelDefinition[gameState.snakePos[1]][gameState.snakePos[0]]
-    touchingSelf = gameState.snakePos in gameState.snakeBlocks[1:]
-    touchingWall = block == '#'
-    return touchingSelf or touchingWall
-
   # update game state
   def _updateGame(self, gameState, gameInput):
+    if not gameState.snakeAlive:
+      return gameState
+
     gameState = self._updateSnakeDir(gameState, gameInput)
     gameState = self._updateSnakePos(gameState)
     gameState = self._updateFood(gameState)
-
-    if self._snakeDead(gameState):
-      return SnakeGame._newGame()
-    else:
-      return gameState
+    gameState = self._updateSnakeAlive(gameState)
+    return gameState
 
   # update the snake's direction
   def _updateSnakeDir(self, gameState, gameInput):
@@ -121,6 +122,13 @@ class SnakeGame:
     if gameState.snakePos == gameState.foodPos:
       return gameState._replace(
         snakeLength = gameState.snakeLength + 1,
-        foodPos = SnakeGame._randomFoodPos())
+        foodPos = Environment._randomFoodPos())
     else:
       return gameState
+
+  # check if the snake should be dead due to a self or wall collision
+  def _updateSnakeAlive(self, gameState):
+    block = self._levelDefinition[gameState.snakePos[1]][gameState.snakePos[0]]
+    touchingSelf = gameState.snakePos in gameState.snakeBlocks[1:]
+    touchingWall = block == '#'
+    return gameState._replace(snakeAlive = not (touchingSelf or touchingWall))

@@ -1,12 +1,12 @@
 import pygame
-from SnakeGame import SnakeGame, Direction, GameState, GameInput
+import SnakeGame
 from constants import levelDefinition
 from Renderer import Renderer
 
 # Main
 if __name__ == "__main__":
-  # Create game object
-  game = SnakeGame(levelDefinition)
+  # Create env
+  env = SnakeGame.Environment(levelDefinition)
 
   # Create renderer
   renderer = Renderer(512, 384)
@@ -21,16 +21,18 @@ if __name__ == "__main__":
     for event in renderer.pollEvents():
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_UP:
-          snakeDir = Direction.up
+          snakeDir = env.Direction.up
         elif event.key == pygame.K_DOWN:
-          snakeDir = Direction.down
+          snakeDir = env.Direction.down
         elif event.key == pygame.K_LEFT:
-          snakeDir = Direction.left
+          snakeDir = env.Direction.left
         elif event.key == pygame.K_RIGHT:
-          snakeDir = Direction.right
+          snakeDir = env.Direction.right
+        elif event.key == pygame.K_r:
+          env.reset()
 
     # Update game
-    game.update(GameInput(snakeDir = snakeDir))
+    env.step(env.Action(snakeDir = snakeDir))
 
     # Clear screen and draw game
-    renderer.draw(game.draw)
+    renderer.draw(env.render)
