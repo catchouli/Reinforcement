@@ -1,3 +1,4 @@
+import math
 import pygame
 import random
 import collections
@@ -40,12 +41,13 @@ class Environment:
   Action = Action
 
   def __init__(self, levelDefinition):
-    self._levelDefinition = levelDefinition
+    self.levelDefinition = levelDefinition
+    self.levelDimensions = (len(levelDefinition[0]), len(levelDefinition))
     self.reset()
 
   # Reset to default state
   def reset(self):
-    self.state = Environment._newGame()
+    self.state = self._newGame()
 
   # Step the game state
   def step(self, gameInput):
@@ -63,7 +65,7 @@ class Environment:
     foodSprite.fill((0, 255, 0), pygame.Rect((1, 1), (14, 14)))
 
     # Draw walls
-    for y, row in enumerate(self._levelDefinition):
+    for y, row in enumerate(self.levelDefinition):
       for x, char in enumerate(row):
         if char == '#':
           screen.blit(wallSprite, (x * 16, y * 16))
@@ -76,8 +78,8 @@ class Environment:
       screen.blit(snakeSprite, (snakePos[0] * 16, snakePos[1] * 16))
   
   # generate a new game state
-  def _newGame():
-    defaultSnakePos = (16, 12)
+  def _newGame(self):
+    defaultSnakePos = tuple(map(lambda x: math.floor(x / 2), self.levelDimensions))
     return State(
       snakeAlive = True,
       snakePos = defaultSnakePos,
@@ -128,7 +130,7 @@ class Environment:
 
   # check if the snake should be dead due to a self or wall collision
   def _updateSnakeAlive(self, gameState):
-    block = self._levelDefinition[gameState.snakePos[1]][gameState.snakePos[0]]
+    block = self.levelDefinition[gameState.snakePos[1]][gameState.snakePos[0]]
     touchingSelf = gameState.snakePos in gameState.snakeBlocks[1:]
     touchingWall = block == '#'
     return gameState._replace(snakeAlive = not (touchingSelf or touchingWall))
