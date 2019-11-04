@@ -1,10 +1,10 @@
 import pygame
-import SnakeGame
+from Action import Direction, Action
 
 class Agent:
   def step(self, env, renderer):
-    # Get snake dir from input
-    snakeDir = None
+    # Get direction from input
+    dir = None
 
     # Whether we should reset after the next iteration
     shouldReset = False
@@ -13,21 +13,21 @@ class Agent:
     for event in renderer.pollEvents():
       if event.type == pygame.KEYDOWN:
         if event.key == pygame.K_UP:
-          snakeDir = env.Direction.up
+          dir = Direction.up
         elif event.key == pygame.K_DOWN:
-          snakeDir = env.Direction.down
+          dir = Direction.down
         elif event.key == pygame.K_LEFT:
-          snakeDir = env.Direction.left
+          dir = Direction.left
         elif event.key == pygame.K_RIGHT:
-          snakeDir = env.Direction.right
+          dir = Direction.right
         elif event.key == pygame.K_r:
           # Delay reset until after we update so we aren't immediately started on the second iteration
           shouldReset = True
 
     # Update game
-    env.step(env.Action(snakeDir = snakeDir))
+    env.step(Action(direction = dir))
 
     # Reset if dead
-    if shouldReset or not env.state.snakeAlive:
+    if shouldReset or not env.alive():
       shouldReset = False
       env.reset()

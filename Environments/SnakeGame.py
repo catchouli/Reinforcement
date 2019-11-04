@@ -2,34 +2,9 @@ import math
 import pygame
 import random
 import collections
-from enum import Enum
 
-# Direction type
-class Direction(Enum):
-  up = 1
-  down = 2
-  left = 3
-  right = 4
-
-  def toVector(self):
-    return {
-      Direction.up: (0, -1),
-      Direction.down: (0, 1),
-      Direction.left: (-1, 0),
-      Direction.right: (1, 0)
-    }.get(self)
-
-  def opposite(self):
-    return {
-      Direction.up: Direction.down,
-      Direction.down: Direction.up,
-      Direction.left: Direction.right,
-      Direction.right: Direction.left
-    }.get(self)
-
-# Action type
-Action = collections.namedtuple('Action',
-  'snakeDir')
+from Action import Action, Direction
+import constants
 
 # State type
 State = collections.namedtuple('State',
@@ -37,17 +12,18 @@ State = collections.namedtuple('State',
 
 # Environment
 class Environment:
-  Direction = Direction
-  Action = Action
-
-  def __init__(self, levelDefinition):
-    self.levelDefinition = levelDefinition
-    self.levelDimensions = (len(levelDefinition[0]), len(levelDefinition))
+  def __init__(self):
+    self.levelDefinition = constants.levelDefinition
+    self.levelDimensions = (len(self.levelDefinition[0]), len(self.levelDefinition))
     self.reset()
 
   # Reset to default state
   def reset(self):
     self.state = self._newGame()
+
+  # Return whether the snake is alive
+  def alive(self):
+    return self.state.snakeAlive
 
   # Step the game state
   def step(self, gameInput):
@@ -105,8 +81,8 @@ class Environment:
 
   # update the snake's direction
   def _updateSnakeDir(self, gameState, gameInput):
-    if gameInput.snakeDir != None and gameState.snakeDir != gameInput.snakeDir.opposite():
-      return gameState._replace(snakeDir = gameInput.snakeDir)
+    if gameInput.direction != None and gameState.snakeDir != gameInput.direction.opposite():
+      return gameState._replace(snakeDir = gameInput.direction)
     else:
       return gameState
 
